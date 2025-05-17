@@ -8,25 +8,44 @@ import { ArrowLeft, Eye, EyeOff, Mail, Lock, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useRouter } from "next/navigation"
 
 export default function Login() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
-    console.log(email);
-    console.log(password);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false)
-      // window.location.href = "/"
-    }, 1500)
-
+    try {
+      const response = await fetch('http://localhost:5009/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          "email": email,
+          "password": password
+        }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        localStorage.setItem('authToken', data.token);
+        router.push("/dashboard");
+      } else {
+        alert("Login failed! try again!")
+      }
+      console.log('Login success:', data);
+    } catch (error) {
+      console.log("Error:", error);
+      alert(error)
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
